@@ -1,40 +1,24 @@
-import serial
-
-ser = serial.Serial()
-
-
-def configure():
-    ser.baudrate = 115200
-    ser.port = "COM6"
-    ser.timeout = 10
+from socket import timeout
+from communication import UARTCommunication
 
 
-def open_communication():
-    print("Opening serial communication")
-    ser.open()
-
-
-def communicate():
+def communicate(communication):
     while True:
         value = input()
         if value == "q":
             break
         print("Writing bytes")
-        ser.write(bytes(value, "utf-8"))
+        communication.send_data(value)
         print("Reading bytes")
-        print(ser.read(13))
-
-
-def close_communication():
-    print("Close serial communication")
-    ser.close()
+        print(communication.receive_data(13))
 
 
 def main():
-    configure()
-    open_communication()
-    communicate()
-    close_communication()
+    uart = UARTCommunication()
+    uart.configure(port="COM6", baudrate=115200, timeout=10)
+    uart.open_communication()
+    communicate(uart)
+    uart.close_communication()
 
 
 if __name__ == "__main__":
