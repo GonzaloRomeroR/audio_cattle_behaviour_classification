@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import serial
+import time
 
 
 class Communication:
@@ -40,6 +41,9 @@ class UARTCommunication(Communication):
     def open_communication(self):
         print("Opening serial communication")
         self.ser.open()
+        print("Waiting until communication is ready")
+        time.sleep(1)
+        print("Clearing buffers")
         self.ser.reset_input_buffer()
         self.ser.reset_output_buffer()
 

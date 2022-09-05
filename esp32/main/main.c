@@ -11,6 +11,8 @@ static const int RX_BUF_SIZE = 1024;
 #define TXD_PIN (UART_PIN_NO_CHANGE)
 #define RXD_PIN (UART_PIN_NO_CHANGE)
 
+#define UART UART_NUM_0
+
 void init(void)
 {
     const uart_config_t uart_config = {
@@ -22,15 +24,16 @@ void init(void)
         .source_clk = UART_SCLK_APB,
     };
 
-    uart_driver_install(UART_NUM_0, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
-    uart_param_config(UART_NUM_0, &uart_config);
-    uart_set_pin(UART_NUM_0, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    uart_driver_install(UART, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
+    uart_param_config(UART, &uart_config);
+    uart_set_pin(UART, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    uart_flush(UART);
 }
 
 int sendData(const char *logName, const char *data)
 {
     const int len = strlen(data);
-    const int txBytes = uart_write_bytes(UART_NUM_0, data, len);
+    const int txBytes = uart_write_bytes(UART, data, len);
     return txBytes;
 }
 
