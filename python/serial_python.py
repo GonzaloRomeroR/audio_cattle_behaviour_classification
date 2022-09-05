@@ -10,7 +10,7 @@ def communicate(communication):
         print("Writing bytes")
         communication.send_data(value)
         print("Reading bytes")
-        print(communication.receive_data(13))
+        print(communication.receive_data(len(value)).decode("utf-8"))
 
 
 def main():

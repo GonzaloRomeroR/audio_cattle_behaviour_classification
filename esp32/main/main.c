@@ -30,7 +30,7 @@ void init(void)
     uart_flush(UART);
 }
 
-int sendData(const char *logName, const char *data)
+int sendData(const char *data)
 {
     const int len = strlen(data);
     const int txBytes = uart_write_bytes(UART, data, len);
@@ -39,29 +39,25 @@ int sendData(const char *logName, const char *data)
 
 static void tx_task(void *arg)
 {
-    static const char *TX_TASK_TAG = "TX_TASK";
-    esp_log_level_set(TX_TASK_TAG, ESP_LOG_INFO);
     while (1)
     {
-        sendData(TX_TASK_TAG, "");
+        sendData("");
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
 
 static void rx_task(void *arg)
 {
-    static const char *RX_TASK_TAG = "RX_TASK";
-    static const char *TX_TASK_TAG = "TX_TASK";
-
-    esp_log_level_set(RX_TASK_TAG, ESP_LOG_INFO);
     uint8_t *data = (uint8_t *)malloc(RX_BUF_SIZE + 1);
     while (1)
     {
         const int rxBytes = uart_read_bytes(UART_NUM_0, data, RX_BUF_SIZE, 1000 / portTICK_RATE_MS);
         if (rxBytes > 0)
         {
-            sendData(TX_TASK_TAG, "Data received");
             data[rxBytes] = 0;
+            char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
+            sprintf(data_send, "%s", data);
+            sendData(data_send);
         }
     }
     free(data);
