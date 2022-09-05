@@ -28,7 +28,7 @@ class Communication:
         pass
 
 
-class UARTCommunication:
+class UARTCommunication(Communication):
     def __init__(self) -> None:
         self.ser = serial.Serial()
 
@@ -40,6 +40,8 @@ class UARTCommunication:
     def open_communication(self):
         print("Opening serial communication")
         self.ser.open()
+        self.ser.reset_input_buffer()
+        self.ser.reset_output_buffer()
 
     def close_communication(self):
         print("Close serial communication")
