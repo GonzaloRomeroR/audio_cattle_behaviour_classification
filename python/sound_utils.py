@@ -24,7 +24,7 @@ def plot_audio(data, samplerate):
 def write_audio_files(elements, sample_rate, path, file_names="audio"):
     Path(path).mkdir(parents=True, exist_ok=True)
     for i, element in enumerate(elements):
-        write_audio_file(element, sample_rate, f"{path}/{file_names}_{i}")
+        write_audio_file(element, sample_rate, f"{path}/{file_names}_{i}.wav")
 
 
 class NoiseGate:
@@ -35,15 +35,35 @@ class NoiseGate:
         self.close_threshold = close_threshold
         self.hold = hold
 
+        # Real time filtering
+        self.opened = False
+        self.hold_time = 0
+
+    def real_time_filter(self, value, sample_rate):
+        if not self.opened:
+            if abs(value) > self.open_threshold:
+                self.opened = True
+                hold_time = 0
+                return value
+            return 0
+        else:
+            if hold_time > self.hold:
+                self.opened = False
+                hold_time = 0
+                return 0
+            elif abs(value) > self.close_threshold:
+                self.hold_time = 0
+            else:
+                self.hold_time += 1 / sample_rate
+            return value
+
     def filter(self, data, sample_rate):
         filter_data = np.zeros(len(data))
         opened = False
         hold_time = 0
         for i, value in enumerate(np.abs(data)):
             if not opened:
-                if value > self.open_threshold or (
-                    value > self.close_threshold and opened == False
-                ):
+                if value > self.open_threshold:
                     opened = True
                     hold_time = 0
             else:
@@ -65,9 +85,7 @@ class NoiseGate:
         sub_end = []
         for i, value in enumerate(np.abs(data)):
             if not opened:
-                if value > self.open_threshold or (
-                    value > self.close_threshold and opened == False
-                ):
+                if value > self.open_threshold:
                     opened = True
                     hold_time = 0
                     sub_init.append(i)
@@ -93,7 +111,7 @@ def main():
     file_name = "audios_recording_01"
     sample_rate, data = upload_audio_file(f"../data/{file_name}.wav")
     # plot_audio(data, sample_rate)
-    noise_gate = NoiseGate(open_threshold=30000, close_threshold=20000, hold=0.1)
+    noise_gate = NoiseGate(open_threshold=30000, close_threshold=20000, hold=1)
     # filtered_data = noise_gate.filter(data, sample_rate)
     splitted_data = noise_gate.split(data, sample_rate)
 

@@ -13,6 +13,52 @@ static const int RX_BUF_SIZE = 1024;
 
 #define UART UART_NUM_0
 
+//////// Noise Gate /////////
+bool opened = false;
+int open_threshold = 30000;
+int close_threshold = 20000;
+float hold = 1;
+float hold_time = 0;
+float sample_rate = 22050;
+
+int noise_gate(int value)
+{
+
+    if (!opened)
+    {
+        if (abs(value) > open_threshold)
+        {
+            opened = true;
+            hold_time = 0;
+            return value;
+        }
+        return 0;
+    }
+
+    else
+    {
+        if (hold_time > hold)
+        {
+            opened = false;
+            hold_time = 0;
+            return 0;
+        }
+        else if (abs(value) > close_threshold)
+        {
+            hold_time = 0;
+        }
+        else
+        {
+            hold_time += 1 / sample_rate;
+        }
+        return value;
+    }
+
+    return value;
+}
+
+/////////////////////////////
+
 void init(void)
 {
     const uart_config_t uart_config = {
@@ -42,7 +88,7 @@ static void tx_task(void *arg)
     while (1)
     {
         sendData("");
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -57,6 +103,11 @@ static void rx_task(void *arg)
             data[rxBytes] = 0;
             char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
             sprintf(data_send, "%s", data);
+
+            // int i;
+            // sscanf(data_send, "%d", &i);
+
+            // sendData(sprintf(data_send, "%d", noise_gate(i)));
             sendData(data_send);
         }
     }
