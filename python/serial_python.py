@@ -1,5 +1,6 @@
 from socket import timeout
 from communication import UARTCommunication
+import matplotlib.pyplot as plt
 
 from sound_utils import *
 
@@ -16,15 +17,25 @@ def communicate(communication):
 
 
 def send_audio(communication):
+
     file_name = "audios_recording_01"
     sample_rate, data = upload_audio_file(f"../data/{file_name}.wav")
     noise_gate = NoiseGate(open_threshold=30000, close_threshold=20000, hold=1)
+    audio_c = []
+    audio_python = []
     for value in data:
-        print("Writing bytes")
-        print(value)
-        print(noise_gate.real_time_filter(value, sample_rate))
-        communication.send_data(str(value))
-        print(communication.receive_data(1).decode("utf-8"))
+        python_value = noise_gate.real_time_filter(value, sample_rate)
+        audio_python.append(python_value)
+        print(python_value)
+        communication.send_data(f"::{value}")
+        c_value = communication.receive_data(1).decode("utf-8")
+        print(c_value)
+        audio_c.append(c_value)
+    plt.plot(audio_c)
+    plt.show()
+
+    plt.plot(audio_python)
+    plt.show()
 
 
 def main():

@@ -5,6 +5,7 @@
 #include "driver/uart.h"
 #include "string.h"
 #include "driver/gpio.h"
+#include <ctype.h>
 
 static const int RX_BUF_SIZE = 1024;
 
@@ -83,6 +84,7 @@ int sendData(const char *data)
     return txBytes;
 }
 
+/*
 static void tx_task(void *arg)
 {
     while (1)
@@ -91,23 +93,37 @@ static void tx_task(void *arg)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
+*/
+
+int interpret_command(char command[], int size)
+{
+    if (size < 3)
+    {
+        return -1;
+    }
+    if (command[0] == ':' && command[1] == ':')
+    {
+        return atoi(&command[2]);
+    }
+    return -1;
+}
 
 static void rx_task(void *arg)
 {
-    uint8_t *data = (uint8_t *)malloc(RX_BUF_SIZE + 1);
+    char *data = (char *)malloc(RX_BUF_SIZE + 1);
     while (1)
     {
         const int rxBytes = uart_read_bytes(UART_NUM_0, data, RX_BUF_SIZE, 1000 / portTICK_RATE_MS);
         if (rxBytes > 0)
         {
             data[rxBytes] = 0;
+            // ESP_LOGI("RX_TASK", "Read %d chars: '%s'", rxBytes, data);
+            int value = interpret_command(data, rxBytes);
+            // ESP_LOGI("RX_INT", "Cast value: %d", value);
+            int noise_gate_out = noise_gate(value);
+            // ESP_LOGI("NOISE_GATE", "Noise gate output %d", noise_gate_out);
             char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
-            sprintf(data_send, "%s", data);
-
-            // int i;
-            // sscanf(data_send, "%d", &i);
-
-            // sendData(sprintf(data_send, "%d", noise_gate(i)));
+            sprintf(data_send, "%d", noise_gate_out);
             sendData(data_send);
         }
     }
