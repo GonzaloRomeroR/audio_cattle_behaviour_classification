@@ -43,13 +43,13 @@ class NoiseGate:
         if not self.opened:
             if abs(value) > self.open_threshold:
                 self.opened = True
-                hold_time = 0
+                self.hold_time = 0
                 return value
             return 0
         else:
-            if hold_time > self.hold:
+            if self.hold_time > self.hold:
                 self.opened = False
-                hold_time = 0
+                self.hold_time = 0
                 return 0
             elif abs(value) > self.close_threshold:
                 self.hold_time = 0

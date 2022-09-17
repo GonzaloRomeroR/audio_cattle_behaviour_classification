@@ -6,6 +6,7 @@
 #include "string.h"
 #include "driver/gpio.h"
 #include <ctype.h>
+#include "noise_gate.h"
 
 static const int RX_BUF_SIZE = 1024;
 
@@ -14,53 +15,7 @@ static const int RX_BUF_SIZE = 1024;
 
 #define UART UART_NUM_0
 
-//////// Noise Gate /////////
-bool opened = false;
-int open_threshold = 30000;
-int close_threshold = 20000;
-float hold = 1;
-float hold_time = 0;
-float sample_rate = 22050;
-
-int noise_gate(int value)
-{
-
-    if (!opened)
-    {
-        if (abs(value) > open_threshold)
-        {
-            opened = true;
-            hold_time = 0;
-            return value;
-        }
-        return 0;
-    }
-
-    else
-    {
-        if (hold_time > hold)
-        {
-            opened = false;
-            hold_time = 0;
-            return 0;
-        }
-        else if (abs(value) > close_threshold)
-        {
-            hold_time = 0;
-        }
-        else
-        {
-            hold_time += 1 / sample_rate;
-        }
-        return value;
-    }
-
-    return value;
-}
-
-/////////////////////////////
-
-void init(void)
+void uart_init(void)
 {
     const uart_config_t uart_config = {
         .baud_rate = 115200,
@@ -132,7 +87,7 @@ static void rx_task(void *arg)
 
 void app_main(void)
 {
-    init();
+    uart_init();
     xTaskCreate(rx_task, "uart_rx_task", 1024 * 2, NULL, configMAX_PRIORITIES, NULL);
     // xTaskCreate(tx_task, "uart_tx_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
 }

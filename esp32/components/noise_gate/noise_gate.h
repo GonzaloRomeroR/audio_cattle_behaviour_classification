@@ -1,0 +1,1 @@
+int noise_gate(int value);
