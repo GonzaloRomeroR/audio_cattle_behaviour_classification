@@ -18,7 +18,7 @@ struct queue
 typedef struct queue queue;
 
 void initialize(queue *q);
-int isempty(queue *q);
+bool isempty(queue *q);
 void enqueue(queue *q, int value);
 int dequeue(queue *q);
 void display(node *head);

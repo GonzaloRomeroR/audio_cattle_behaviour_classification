@@ -67,6 +67,7 @@ int interpret_command(char command[], int size)
 static void rx_task(void *arg)
 {
     char *data = (char *)malloc(RX_BUF_SIZE + 1);
+    initialize_ma();
     while (1)
     {
         const int rxBytes = uart_read_bytes(UART_NUM_0, data, RX_BUF_SIZE, 1000 / portTICK_RATE_MS);
@@ -82,7 +83,7 @@ static void rx_task(void *arg)
             char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
             // sprintf(data_send, "%d", noise_gate_out);
             sprintf(data_send, "%d", filter_out);
-            ESP_LOGI("MOVING_AVERAGE", "Moving averageoutput: %d", (int)filter_out);
+            ESP_LOGI("MOVING_AVERAGE", "Moving average output: %d", (int)filter_out);
             sendData(data_send);
         }
     }

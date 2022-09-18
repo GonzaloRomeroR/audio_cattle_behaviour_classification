@@ -10,14 +10,14 @@
 
 void initialize(queue *q)
 {
-    q = malloc(sizeof(queue));
     q->count = 0;
     q->front = NULL;
     q->rear = NULL;
 }
 
-int isempty(queue *q)
+bool isempty(queue *q)
 {
+    // ESP_LOGI("ENTERING", "Entering is empty");
     return (q->rear == NULL);
 }
 
@@ -49,7 +49,7 @@ void enqueue(queue *q, int value)
 int queue_sum(queue *q)
 {
     int sum = 0;
-    node *temp = q->rear;
+    node *temp = q->front;
     while (temp)
     {
         sum += temp->data;

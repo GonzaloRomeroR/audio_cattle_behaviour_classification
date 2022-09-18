@@ -12,18 +12,23 @@ int window_size = 3;
 queue *q;
 float average = 0;
 
+void initialize_ma()
+{
+    q = malloc(sizeof(queue));
+    initialize(q);
+    // ESP_LOGI("INIT", "Initializing filter");
+}
+
 float calculate_ma(int value)
 {
-    if (isempty(q) == true)
-    {
-        initialize(q);
-    }
+    // ESP_LOGI("CALC", "Calculations started");
     if (q->count < window_size)
     {
         enqueue(q, value);
         if (q->count == window_size)
         {
-            average = 0 / window_size;
+            float sum = queue_sum(q);
+            average = sum / window_size;
             return average;
         }
         return 0;
@@ -32,7 +37,7 @@ float calculate_ma(int value)
     {
         int last = dequeue(q);
         enqueue(q, value);
-        average += 1 / window_size * (value - last);
+        average += 1 / (float)window_size * (value - last);
         return average;
     }
 }
