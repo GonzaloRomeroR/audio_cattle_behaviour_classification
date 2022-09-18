@@ -3,6 +3,7 @@ from communication import UARTCommunication
 import matplotlib.pyplot as plt
 
 from sound_utils import *
+from filter import MovingAverage
 
 
 def communicate(communication):
