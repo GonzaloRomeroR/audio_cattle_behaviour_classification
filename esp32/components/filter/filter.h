@@ -1,0 +1,1 @@
+float calculate_ma(int value);

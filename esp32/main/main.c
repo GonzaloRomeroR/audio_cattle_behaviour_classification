@@ -7,6 +7,7 @@
 #include "driver/gpio.h"
 #include <ctype.h>
 #include "noise_gate.h"
+#include "filter.h"
 
 static const int RX_BUF_SIZE = 1024;
 
@@ -74,11 +75,14 @@ static void rx_task(void *arg)
             data[rxBytes] = 0;
             // ESP_LOGI("RX_TASK", "Read %d chars: '%s'", rxBytes, data);
             int value = interpret_command(data, rxBytes);
-            // ESP_LOGI("RX_INT", "Cast value: %d", value);
-            int noise_gate_out = noise_gate(value);
+            ESP_LOGI("RX_INT", "Cast value: %d", value);
+            // int noise_gate_out = noise_gate(value);
+            int filter_out = (int)calculate_ma(value);
             // ESP_LOGI("NOISE_GATE", "Noise gate output %d", noise_gate_out);
             char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
-            sprintf(data_send, "%d", noise_gate_out);
+            // sprintf(data_send, "%d", noise_gate_out);
+            sprintf(data_send, "%d", filter_out);
+            ESP_LOGI("MOVING_AVERAGE", "Moving averageoutput: %d", (int)filter_out);
             sendData(data_send);
         }
     }
