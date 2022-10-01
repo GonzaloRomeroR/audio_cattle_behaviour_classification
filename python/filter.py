@@ -18,7 +18,7 @@ class MovingAverage:
         else:
             last = self.queue_ma.get()
             self.queue_ma.put(value)
-            self.average = self.average + 1 / self.window_size * (value - last)
+            self.average += 1 / self.window_size * (value - last)
             return self.average
 
 
