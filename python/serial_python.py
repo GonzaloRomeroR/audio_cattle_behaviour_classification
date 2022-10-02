@@ -1,9 +1,8 @@
 from socket import timeout
-from communication import UARTCommunication
+from utils.communication_utils import UARTCommunication
 import matplotlib.pyplot as plt
 
-from sound_utils import *
-from filter import MovingAverage
+from utils.sound_utils import *
 
 
 def communicate(communication):
