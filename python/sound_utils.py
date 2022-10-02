@@ -3,6 +3,7 @@ from scipy.io import wavfile
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+import math
 
 
 def upload_audio_file(path: str):
@@ -104,7 +105,49 @@ class NoiseGate:
 
         for init, end in zip(sub_init, sub_end):
             subelements.append(data[init:end])
-        return subelements
+        return subelements, init
+
+
+class FeatureExtractor:
+    def __init__(self, data, sample_rate):
+        self.data = data
+        self.sample_rate = sample_rate
+
+    def variance(self, data, ddof=0):
+        n = len(data)
+        mean = sum(data) / n
+        return sum((x - mean) ** 2 for x in data) / (n - ddof)
+
+    def stdev(self, data):
+        var = self.variance(data)
+        std_dev = math.sqrt(var)
+        return std_dev
+
+    def get_duration(self):
+        return len(self.data) / self.sample_rate
+
+    def get_max_amplitude(self):
+        return max(self.data)
+
+    def get_zero_crosses(self):
+        data_sign = np.sign(np.diff(self.data, append=0))
+        return np.count_nonzero(np.abs(np.diff(data_sign)))
+
+    def get_simetry(self):
+        max_pos = np.argmax(self.data)
+        return np.trapz(self.data[:max_pos], axis=0) / np.trapz(self.data, axis=0)
+
+    def get_desviation(self):
+        return self.stdev(self.data)
+
+    def extract_features(self):
+        features = []
+        features.append(self.get_duration())
+        features.append(self.get_max_amplitude())
+        features.append(self.get_zero_crosses())
+        features.append(self.get_simetry())
+        features.append(self.get_desviation())
+        return features
 
 
 def main():
