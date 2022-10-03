@@ -29,5 +29,6 @@ class AudioDataset(Dataset):
 def upload_dataset(path):
     dataset = []
     for file in os.listdir(path):
-        dataset.append(upload_audio_file(f"{path}/{file}"))
+        file = upload_audio_file(f"{path}/{file}")
+        dataset.append((file[0], file[1] / np.iinfo(file[1].dtype).max))
     return dataset

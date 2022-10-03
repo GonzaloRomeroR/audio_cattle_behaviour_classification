@@ -105,7 +105,7 @@ class NoiseGate:
 
         for init, end in zip(sub_init, sub_end):
             subelements.append(data[init:end])
-        return subelements, init
+        return subelements, sub_init, sub_end
 
 
 class FeatureExtractor:
@@ -115,6 +115,8 @@ class FeatureExtractor:
 
     def variance(self, data, ddof=0):
         n = len(data)
+        if n == 0:
+            return 0
         mean = sum(data) / n
         return sum((x - mean) ** 2 for x in data) / (n - ddof)
 
@@ -127,13 +129,15 @@ class FeatureExtractor:
         return len(self.data) / self.sample_rate
 
     def get_max_amplitude(self):
-        return max(self.data)
+        return max(self.data) if len(self.data) > 0 else 0
 
     def get_zero_crosses(self):
         data_sign = np.sign(np.diff(self.data, append=0))
         return np.count_nonzero(np.abs(np.diff(data_sign)))
 
     def get_simetry(self):
+        if len(self.data) == 0:
+            return 0
         max_pos = np.argmax(self.data)
         return np.trapz(self.data[:max_pos], axis=0) / np.trapz(self.data, axis=0)
 
