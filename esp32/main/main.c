@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include "noise_gate.h"
 #include "filter.h"
+#include "decision_tree.h"
 
 static const int RX_BUF_SIZE = 1024;
 
@@ -81,23 +82,23 @@ float interpret_command_features(char command[], int size)
         switch (command[2])
         {
         case 't':
-            duration = atof(&command[3]);
+            duration = (float)atof(&command[3]);
             return duration;
         case 'c':
-            crosses = atof(&command[3]);
+            crosses = (float)atof(&command[3]);
             return crosses;
         case 'm':
-            maximum = atof(&command[3]);
+            maximum = (float)atof(&command[3]);
             return maximum;
         case 's':
-            simetry = atof(&command[3]);
+            simetry = (float)atof(&command[3]);
             return simetry;
         case 'd':
-            desviation = atof(&command[3]);
+            desviation = (float)atof(&command[3]);
             return desviation;
         }
 
-        return atof(&command[2]);
+        return (float)atof(&command[2]);
     }
     return -1;
 }
@@ -113,16 +114,18 @@ static void rx_task(void *arg)
         {
             data[rxBytes] = 0;
             // ESP_LOGI("RX_TASK", "Read %d chars: '%s'", rxBytes, data);
-            int value = interpret_command(data, rxBytes);
-            ESP_LOGI("RX_INT", "Cast value: %d", value);
-            // int noise_gate_out = noise_gate(value);
-            int filter_out = (int)calculate_ma(value);
-            // ESP_LOGI("NOISE_GATE", "Noise gate output %d", noise_gate_out);
-            char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
-            // sprintf(data_send, "%d", noise_gate_out);
-            sprintf(data_send, "%d", filter_out);
-            ESP_LOGI("MOVING_AVERAGE", "Moving average output: %d", (int)filter_out);
-            sendData(data_send);
+            float value = interpret_command_features(data, rxBytes);
+            ESP_LOGI("RX_INT", "Cast value: %f", value);
+
+            // ESP_LOGI("RX_INT", "Cast value: %d", value);
+            //  int noise_gate_out = noise_gate(value);
+            //  int filter_out = (int)calculate_ma(value);
+            //  ESP_LOGI("NOISE_GATE", "Noise gate output %d", noise_gate_out);
+            //  char *data_send = (char *)malloc(RX_BUF_SIZE + 1);
+            //  sprintf(data_send, "%d", noise_gate_out);
+            //  sprintf(data_send, "%d", filter_out);
+            //  ESP_LOGI("MOVING_AVERAGE", "Moving average output: %d", (int)filter_out);
+            //  sendData(data_send);
         }
     }
     free(data);

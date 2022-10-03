@@ -1,3 +1,4 @@
+import time
 from socket import timeout
 from utils.communication_utils import UARTCommunication
 import matplotlib.pyplot as plt
@@ -26,6 +27,7 @@ def send_extracted_data(communication, data):
     communication.send_data(f"::s{data[3]}")
     communication.send_data(f"::d{data[4]}")
 
+
 def send_audio(communication):
     file_name = "audios_recording_01"
     sample_rate, data = upload_audio_file(f"../data/{file_name}.wav")
@@ -52,7 +54,9 @@ def main():
     uart.configure(port="COM6", baudrate=115200, timeout=10)
     uart.open_communication()
     # communicate(uart)
-    send_extracted_data([1.1, 2.1, 3, 6, 4.1])
+    for i in range(10):
+        send_extracted_data(uart, [1.1, 2.1, 3, 6, 4.1])
+        time.sleep(1)
     # send_audio(uart)
     uart.close_communication()
 
