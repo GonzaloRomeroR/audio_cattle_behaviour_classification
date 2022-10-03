@@ -51,6 +51,12 @@ static void tx_task(void *arg)
 }
 */
 
+float duration = 0;
+float crosses = 0;
+float maximum = 0;
+float simetry = 0;
+float desviation = 0;
+
 int interpret_command(char command[], int size)
 {
     if (size < 3)
@@ -60,6 +66,38 @@ int interpret_command(char command[], int size)
     if (command[0] == ':' && command[1] == ':')
     {
         return atoi(&command[2]);
+    }
+    return -1;
+}
+
+float interpret_command_features(char command[], int size)
+{
+    if (size < 3)
+    {
+        return -1;
+    }
+    if (command[0] == ':' && command[1] == ':')
+    {
+        switch (command[2])
+        {
+        case 't':
+            duration = atof(&command[3]);
+            return duration;
+        case 'c':
+            crosses = atof(&command[3]);
+            return crosses;
+        case 'm':
+            maximum = atof(&command[3]);
+            return maximum;
+        case 's':
+            simetry = atof(&command[3]);
+            return simetry;
+        case 'd':
+            desviation = atof(&command[3]);
+            return desviation;
+        }
+
+        return atof(&command[2]);
     }
     return -1;
 }
