@@ -1,5 +1,5 @@
 import queue
-from sound_utils import *
+from .sound_utils import *
 
 
 class MovingAverage:
