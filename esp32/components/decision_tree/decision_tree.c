@@ -9,5 +9,19 @@
 
 int decision_tree_classify(float duration, float crosses, float maximum, float simetry, float desviation)
 {
-    return 1;
+    if (desviation <= 690)
+    {
+        return 1;
+    }
+    else
+    {
+        if (maximum <= 113.5)
+        {
+            return 0;
+        }
+        else
+        {
+            return 2;
+        }
+    }
 }
