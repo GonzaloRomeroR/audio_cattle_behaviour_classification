@@ -21,11 +21,15 @@ def send_extracted_data(communication, data):
     """
     ["Duracion", "Cruces", "Maximo", "Simetria", "Desvio"]
     """
-    communication.send_data(f"::t{data[0]}")
-    communication.send_data(f"::c{data[1]}")
-    communication.send_data(f"::m{data[2]}")
-    communication.send_data(f"::s{data[3]}")
-    communication.send_data(f"::d{data[4]}")
+
+    print("Sending information...")
+    communication.send_data(f":t{data[0]}\n")
+    communication.send_data(f":c{data[1]}\n")
+    communication.send_data(f":m{data[2]}\n")
+    communication.send_data(f":s{data[3]}\n")
+    communication.send_data(f":d{data[4]}\n")
+    communication.send_data(f":f\n")
+    print("Finish sending information...")
 
 
 def send_audio(communication):
@@ -38,7 +42,7 @@ def send_audio(communication):
         python_value = noise_gate.real_time_filter(value, sample_rate)
         audio_python.append(python_value)
         print(python_value)
-        communication.send_data(f"::{value}")
+        communication.send_data(f":{value}")
         c_value = communication.receive_data(1).decode("utf-8")
         print(c_value)
         audio_c.append(c_value)
@@ -50,13 +54,20 @@ def send_audio(communication):
 
 
 def main():
+    print("Creating UART interface")
     uart = UARTCommunication()
+    print("Configuring UART...")
     uart.configure(port="COM6", baudrate=115200, timeout=10)
+    print("Opening communications...")
     uart.open_communication()
     # communicate(uart)
     for i in range(10):
-        send_extracted_data(uart, [1.1, 2.1, 3, 6, 4.1])
+        send_extracted_data(uart, [1.1, 2.1, 3, 6, 1000])
+        print("Waiting...")
+        clss = uart.receive_data(1)
+        print(clss)
         time.sleep(1)
+
     # send_audio(uart)
     uart.close_communication()
 

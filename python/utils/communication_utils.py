@@ -32,6 +32,7 @@ class Communication:
 class UARTCommunication(Communication):
     def __init__(self) -> None:
         self.ser = serial.Serial()
+        self.ser.timeout = 1.0
 
     def configure(self, **kwargs):
         self.ser.baudrate = kwargs["baudrate"]
@@ -42,7 +43,7 @@ class UARTCommunication(Communication):
         print("Opening serial communication")
         self.ser.open()
         print("Waiting until communication is ready")
-        time.sleep(1)
+        time.sleep(2)
         print("Clearing buffers")
         self.ser.reset_input_buffer()
         self.ser.reset_output_buffer()

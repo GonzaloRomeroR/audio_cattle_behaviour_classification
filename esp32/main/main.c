@@ -17,6 +17,9 @@ static const int RX_BUF_SIZE = 1024;
 
 #define UART UART_NUM_0
 
+uint8_t counter;
+char uart_command[30];
+
 void uart_init(void)
 {
     const uart_config_t uart_config = {
@@ -64,43 +67,69 @@ int interpret_command(char command[], int size)
     {
         return -1;
     }
-    if (command[0] == ':' && command[1] == ':')
+    if (command[0] == ':')
     {
-        return atoi(&command[2]);
+        return atoi(&command[1]);
     }
     return -1;
 }
 
 float interpret_command_features(char command[], int size)
 {
-    if (size < 3)
-    {
-        return -1;
-    }
-    if (command[0] == ':' && command[1] == ':')
-    {
-        switch (command[2])
-        {
-        case 't':
-            duration = (float)atof(&command[3]);
-            return duration;
-        case 'c':
-            crosses = (float)atof(&command[3]);
-            return crosses;
-        case 'm':
-            maximum = (float)atof(&command[3]);
-            return maximum;
-        case 's':
-            simetry = (float)atof(&command[3]);
-            return simetry;
-        case 'd':
-            desviation = (float)atof(&command[3]);
-            return desviation;
-        }
 
-        return (float)atof(&command[2]);
+    int result;
+    char *data_send;
+    switch (command[1])
+    {
+    case 't':
+        duration = (float)atof(&command[2]);
+        return duration;
+    case 'c':
+        crosses = (float)atof(&command[2]);
+        return crosses;
+    case 'm':
+        maximum = (float)atof(&command[2]);
+        return maximum;
+    case 's':
+        simetry = (float)atof(&command[2]);
+        return simetry;
+    case 'd':
+        desviation = (float)atof(&command[2]);
+        return desviation;
+    case 'f':
+        data_send = (char *)malloc(RX_BUF_SIZE + 1);
+        result = decision_tree_classify(duration, crosses, maximum, simetry, desviation);
+        sprintf(data_send, "%d", result);
+        // ESP_LOGI("TX_INT", "Result: %d", result);
+        sendData(data_send);
+        return 0;
     }
     return -1;
+}
+
+void interpret_rx(char command[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        switch (command[i])
+        {
+        case ':':
+            counter = 0;
+            uart_command[counter++] = command[i];
+            break;
+        case '\r':
+            uart_command[counter] = 0;
+            interpret_command_features(uart_command, counter);
+            break;
+        case '\n':
+            uart_command[counter] = 0;
+            interpret_command_features(uart_command, counter);
+            break;
+        default:
+            uart_command[counter++] = command[i];
+            break;
+        }
+    }
 }
 
 static void rx_task(void *arg)
@@ -114,8 +143,8 @@ static void rx_task(void *arg)
         {
             data[rxBytes] = 0;
             // ESP_LOGI("RX_TASK", "Read %d chars: '%s'", rxBytes, data);
-            float value = interpret_command_features(data, rxBytes);
-            ESP_LOGI("RX_INT", "Cast value: %f", value);
+            interpret_rx(data, rxBytes);
+            // ESP_LOGI("RX_INT", "Cast value: %f", value);
 
             // ESP_LOGI("RX_INT", "Cast value: %d", value);
             //  int noise_gate_out = noise_gate(value);
