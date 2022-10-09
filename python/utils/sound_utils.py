@@ -4,6 +4,44 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import math
+from collections import namedtuple
+import pandas as pd
+import scipy
+import os
+
+class AudioDataset():
+    
+    def __init__(self, data_folder, annotation_file):
+
+        self.audio_data = namedtuple("AudioData", ["data", "sample_freq", "label"])
+        self.data_folder = data_folder 
+        
+        ds = pd.read_csv(f"{annotation_file}")
+        self.filenames = list(ds['filename'])
+        
+        if 'label' in ds.columns:
+            self.labels = ds['label'].values
+        else:
+            self.labels = -np.ones(len(self.filenames))
+            
+        self.cache = {}
+    
+    def __len__(self):
+        return len(self.labels)
+    
+    def __getitem__(self, index):
+        if index in self.cache:
+            data, fs, label = self.cache[index]
+        else:
+            fname = f"{self.filenames[index] :04d}.wav"
+            fpath = os.path.join(self.data_folder, fname)
+            
+            fs, data = scipy.io.wavfile.read(fpath)
+            data = data / np.iinfo(data.dtype).max 
+            label = self.labels[index]
+            self.cache[index] = (data, fs, label)
+            
+        return self.audio_data(data, fs, label)
 
 
 def upload_audio_file(path: str):

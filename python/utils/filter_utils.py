@@ -3,10 +3,14 @@ from .sound_utils import *
 
 
 class MovingAverage:
-    def __init__(self, window_size) -> None:
+    def __init__(self, window_size=10) -> None:
         self.window_size = window_size
         self.queue_ma = queue.Queue(maxsize=window_size)
         self.average = 0
+
+    def set_window_size(self, f_cutoff, sample_rate):
+        f_norm = f_cutoff / sample_rate
+        self.window_size = (int)((0.196202 + f_norm**2) ** 0.5 / f_norm)
 
     def calculate_ma(self, value: float):
         if self.queue_ma.qsize() < self.window_size:
