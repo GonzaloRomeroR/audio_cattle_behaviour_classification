@@ -77,8 +77,6 @@ float getCrosses(float num[], int size)
 
 float getSimetry(float num[], int size)
 {
-    float simetry = 0;
-
     float max = getMaximum(num, size);
     int argMax = 0;
 
@@ -102,7 +100,7 @@ float getSimetry(float num[], int size)
         return 0;
     }
 
-    float areaAfter;
+    float areaAfter = 0;
 
     for (int i = argMax; i < size - 1; i++)
     {
