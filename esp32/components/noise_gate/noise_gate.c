@@ -7,19 +7,24 @@
 #include "driver/gpio.h"
 #include <ctype.h>
 
+#include <stdio.h>
+#include <math.h>
+#include <float.h>
+#include <stdbool.h>
+
 bool opened = false;
-int open_threshold = 30000;
-int close_threshold = 20000;
-float hold = 1;
+float open_threshold = 0.05;
+float close_threshold = 0.05;
+float hold = 0;
 float hold_time = 0;
 float sample_rate = 22050;
 
-int noise_gate(int value)
+float noise_gate(float value)
 {
 
     if (!opened)
     {
-        if (abs(value) > open_threshold)
+        if (fabs(value) >= open_threshold)
         {
             opened = true;
             hold_time = 0;
@@ -30,13 +35,19 @@ int noise_gate(int value)
 
     else
     {
-        if (hold_time > hold)
+        if (fabs(value) >= open_threshold)
+        {
+            opened = true;
+            hold_time = 0;
+            return value;
+        }
+        else if (hold_time >= hold)
         {
             opened = false;
             hold_time = 0;
             return 0;
         }
-        else if (abs(value) > close_threshold)
+        else if (fabs(value) >= close_threshold)
         {
             hold_time = 0;
         }

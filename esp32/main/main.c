@@ -9,6 +9,7 @@
 #include "noise_gate.h"
 #include "filter.h"
 #include "decision_tree.h"
+#include "extractor.h"
 
 static const int RX_BUF_SIZE = 1024;
 
@@ -130,6 +131,39 @@ void interpret_rx(char command[], int size)
             break;
         }
     }
+}
+
+// PIPELINE
+void pipeline(float data[], int size, float sampleRate)
+{
+    initialize_ma();
+
+    float *filtered_data;
+    filtered_data = (float *)malloc(size * sizeof(float));
+
+    for (int i = 0; i < size; i++)
+    {
+        filtered_data[i] = calculate_ma(data[i]);
+        // printf("Filter %d: %f\n", i, filtered_data[i]);
+    }
+
+    float *noise_gate_data;
+    noise_gate_data = (float *)malloc(size * sizeof(float));
+
+    for (int i = 0; i < size; i++)
+    {
+        noise_gate_data[i] = noise_gate(filtered_data[i]);
+        // printf("Gate %d: %f\n", i, noise_gate_data[i]);
+    }
+
+    extractFeatures(noise_gate_data, size, sampleRate);
+
+    for (int i = 0; i < 5; i++)
+    {
+        printf("Feature %d: %f\n", i, features[i]);
+    }
+    int result = decision_tree_classify(features[0], features[1], features[2], features[3], features[4]);
+    printf("Result: %d", result);
 }
 
 static void rx_task(void *arg)

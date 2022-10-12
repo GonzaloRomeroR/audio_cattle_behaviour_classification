@@ -1,3 +1,6 @@
+
+extern float features[5];
+
 void extractFeatures(float num[], int size, float sampleRate);
 float getSimetry(float num[], int size);
 float getCrosses(float num[], int size);
