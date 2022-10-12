@@ -56,11 +56,53 @@ static void tx_task(void *arg)
 }
 */
 
+// PIPELINE
+int pipeline(float data[], int size, float sampleRate)
+{
+    initialize_ma();
+
+    for (int i = 0; i < size; i++)
+    {
+        printf("Data %d: %f\n", i, data[i]);
+    }
+
+    float *filtered_data;
+    filtered_data = (float *)malloc(size * sizeof(float));
+
+    for (int i = 0; i < size; i++)
+    {
+        filtered_data[i] = calculate_ma(data[i]);
+        printf("Filter %d: %f\n", i, filtered_data[i]);
+    }
+
+    float *noise_gate_data;
+    noise_gate_data = (float *)malloc(size * sizeof(float));
+
+    for (int i = 0; i < size; i++)
+    {
+        noise_gate_data[i] = noise_gate(filtered_data[i]);
+        printf("Gate %d: %f\n", i, noise_gate_data[i]);
+    }
+
+    extractFeatures(noise_gate_data, size, sampleRate);
+
+    for (int i = 0; i < 5; i++)
+    {
+        printf("Feature %d: %f\n", i, features[i]);
+    }
+    int result = decision_tree_classify(features[0], features[1], features[2], features[3], features[4]);
+    printf("Result: %d", result);
+    return result;
+}
+
 float duration = 0;
 float crosses = 0;
 float maximum = 0;
 float simetry = 0;
 float desviation = 0;
+
+int read_counter = 0;
+float dataBuffer[6];
 
 int interpret_command(char command[], int size)
 {
@@ -77,11 +119,21 @@ int interpret_command(char command[], int size)
 
 float interpret_command_features(char command[], int size)
 {
-
     int result;
     char *data_send;
     switch (command[1])
     {
+    case 'n':
+        dataBuffer[read_counter] = (float)atof(&command[2]);
+        printf("Data buffer: %f\n", dataBuffer[read_counter]);
+        read_counter++;
+        if (read_counter == 6)
+        {
+            read_counter = 0;
+            result = pipeline(dataBuffer, 6, 1);
+            return result;
+        }
+        return -1;
     case 't':
         duration = (float)atof(&command[2]);
         return duration;
@@ -131,39 +183,6 @@ void interpret_rx(char command[], int size)
             break;
         }
     }
-}
-
-// PIPELINE
-void pipeline(float data[], int size, float sampleRate)
-{
-    initialize_ma();
-
-    float *filtered_data;
-    filtered_data = (float *)malloc(size * sizeof(float));
-
-    for (int i = 0; i < size; i++)
-    {
-        filtered_data[i] = calculate_ma(data[i]);
-        // printf("Filter %d: %f\n", i, filtered_data[i]);
-    }
-
-    float *noise_gate_data;
-    noise_gate_data = (float *)malloc(size * sizeof(float));
-
-    for (int i = 0; i < size; i++)
-    {
-        noise_gate_data[i] = noise_gate(filtered_data[i]);
-        // printf("Gate %d: %f\n", i, noise_gate_data[i]);
-    }
-
-    extractFeatures(noise_gate_data, size, sampleRate);
-
-    for (int i = 0; i < 5; i++)
-    {
-        printf("Feature %d: %f\n", i, features[i]);
-    }
-    int result = decision_tree_classify(features[0], features[1], features[2], features[3], features[4]);
-    printf("Result: %d", result);
 }
 
 static void rx_task(void *arg)

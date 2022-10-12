@@ -1,1 +1,3 @@
-int noise_gate(int value);
+extern float sample_rate;
+
+float noise_gate(float value);

@@ -21,9 +21,9 @@ float sample_rate = 22050;
 
 float noise_gate(float value)
 {
-
     if (!opened)
     {
+
         if (fabs(value) >= open_threshold)
         {
             opened = true;
