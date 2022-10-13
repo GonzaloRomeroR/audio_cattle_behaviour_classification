@@ -53,6 +53,15 @@ def send_audio(communication):
     plt.show()
 
 
+def send_raw_audio(communication):
+    file_name = "audios_recording_01"
+    sample_rate, data = upload_audio_file(f"../data/{file_name}.wav")
+    for value in data[:10000]:
+        communication.send_data(f":n{value}\n")
+    c_value = communication.receive_data(1)
+    print(c_value)
+
+
 def main():
     print("Creating UART interface")
     uart = UARTCommunication()
@@ -61,14 +70,15 @@ def main():
     print("Opening communications...")
     uart.open_communication()
     # communicate(uart)
-    for i in range(10):
-        send_extracted_data(uart, [1.1, 2.1, 3, 6, 1000])
-        print("Waiting...")
-        clss = uart.receive_data(1)
-        print(clss)
-        time.sleep(1)
+    # for i in range(10):
+    #    send_extracted_data(uart, [1.1, 2.1, 3, 6, 1000])
+    #    print("Waiting...")
+    #    clss = uart.receive_data(1)
+    #    print(clss)
+    #    time.sleep(1)
 
     # send_audio(uart)
+    send_raw_audio(uart)
     uart.close_communication()
 
 

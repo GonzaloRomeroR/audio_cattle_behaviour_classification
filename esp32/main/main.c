@@ -63,7 +63,7 @@ int pipeline(float data[], int size, float sampleRate)
 
     for (int i = 0; i < size; i++)
     {
-        printf("Data %d: %f\n", i, data[i]);
+        // printf("Data %d: %f\n", i, data[i]);
     }
 
     float *filtered_data;
@@ -72,7 +72,7 @@ int pipeline(float data[], int size, float sampleRate)
     for (int i = 0; i < size; i++)
     {
         filtered_data[i] = calculate_ma(data[i]);
-        printf("Filter %d: %f\n", i, filtered_data[i]);
+        // printf("Filter %d: %f\n", i, filtered_data[i]);
     }
 
     float *noise_gate_data;
@@ -81,17 +81,17 @@ int pipeline(float data[], int size, float sampleRate)
     for (int i = 0; i < size; i++)
     {
         noise_gate_data[i] = noise_gate(filtered_data[i]);
-        printf("Gate %d: %f\n", i, noise_gate_data[i]);
+        // printf("Gate %d: %f\n", i, noise_gate_data[i]);
     }
 
     extractFeatures(noise_gate_data, size, sampleRate);
 
     for (int i = 0; i < 5; i++)
     {
-        printf("Feature %d: %f\n", i, features[i]);
+        // printf("Feature %d: %f\n", i, features[i]);
     }
     int result = decision_tree_classify(features[0], features[1], features[2], features[3], features[4]);
-    printf("Result: %d", result);
+    // printf("Result: %d", result);
     return result;
 }
 
@@ -102,7 +102,7 @@ float simetry = 0;
 float desviation = 0;
 
 int read_counter = 0;
-float dataBuffer[6];
+float dataBuffer[10000];
 
 int interpret_command(char command[], int size)
 {
@@ -125,12 +125,16 @@ float interpret_command_features(char command[], int size)
     {
     case 'n':
         dataBuffer[read_counter] = (float)atof(&command[2]);
-        printf("Data buffer: %f\n", dataBuffer[read_counter]);
+        // printf("Data buffer: %f\n", dataBuffer[read_counter]);
         read_counter++;
-        if (read_counter == 6)
+        if (read_counter == 10000)
         {
+            data_send = (char *)malloc(RX_BUF_SIZE + 1);
             read_counter = 0;
-            result = pipeline(dataBuffer, 6, 1);
+            result = pipeline(dataBuffer, 10000, 1);
+            sprintf(data_send, "%d", result);
+            // ESP_LOGI("TX_INT", "Result: %d", result);
+            sendData(data_send);
             return result;
         }
         return -1;
